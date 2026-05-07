@@ -1,3 +1,40 @@
+const express = require("express");
+const router = express.Router();
+
+const Slot = require("../models/Slot");
+const sendEmail = require("../utils/sendEmail");
+
+
+// ===============================
+// GET available slots by date
+// ===============================
+
+router.get("/slots/:date", async (req, res) => {
+
+  try {
+
+    const slots = await Slot.find({
+      date: req.params.date,
+      isBooked: false
+    });
+
+    return res.json(slots);
+
+  } catch (error) {
+
+    return res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+});
+
+
+// ===============================
+// POST Book Slot + Send Email
+// ===============================
+
 router.post("/book-slot", async (req, res) => {
 
   try {
@@ -11,44 +48,37 @@ router.post("/book-slot", async (req, res) => {
       isBooked: false
     });
 
+    // Slot not available
     if (!slot) {
+
       return res.status(400).json({
         message: "Slot not available"
       });
+
     }
 
-    // Mark slot booked
+    // Mark slot as booked
     slot.isBooked = true;
 
     await slot.save();
 
-    // Meeting link
+    // Temporary meeting link
     const meetingLink =
       "https://meet.google.com/fsg-tqfk-ejz";
 
-    // Send email safely
-    try {
+    // Send email
+    await sendEmail(
+      email,
+      name,
+      meetingLink,
+      date,
+      time
+    );
 
-      await sendEmail(
-        email,
-        name,
-        meetingLink,
-        date,
-        time
-      );
-
-      console.log("Email sent");
-
-    } catch (emailError) {
-
-      console.log("Email error:", emailError);
-
-    }
-
-    // ALWAYS send response
+    // Send ONLY ONE response
     return res.status(200).json({
       success: true,
-      message: "Slot booked successfully"
+      message: "Slot booked & email sent successfully"
     });
 
   } catch (error) {
@@ -63,3 +93,10 @@ router.post("/book-slot", async (req, res) => {
   }
 
 });
+
+
+// ===============================
+// Export router
+// ===============================
+
+module.exports = router;
