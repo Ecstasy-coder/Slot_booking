@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecstasy Schools Demo - Scheduling</title>
+    
+
+    <style>
+        /* --- GLOBAL STYLES --- */
+        :root {
+            --primary-blue: #006bff;
+            --primary-blue-hover: #005be6;
+            --purple-main: #a35dd8;
+            --purple-light: #b864d4;
+            --text-dark: #1a1a1a;
+            --text-gray: #666666;
+            --border-color: #e2e2e2;
+            --bg-gray: #f3f4f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .app-container {
+            background: white;
+            width: 100%;
+            max-width: 1060px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            min-height: 620px;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 35%;
+            border-right: 1px solid var(--border-color);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-container img {
+            max-width: 150px;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: none; 
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--primary-blue);
+            font-size: 20px;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .back-btn:hover {
+            background: var(--bg-gray);
+        }
+
+        .provider-name {
+            color: var(--text-gray);
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .event-title {
+            font-size: 28px;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        .event-detail {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            color: var(--text-gray);
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .event-detail svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            fill: var(--text-gray);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 30px;
+            font-size: 13px;
+        }
+
+        .sidebar-footer a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        /* --- MAIN CONTENT AREA --- */
+        .main-content {
+            width: 65%;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2.section-title {
+            font-size: 20px;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+        }
+
+        /* --- CALENDAR DESIGN --- */
+        .calendar-wrapper {
+            display: flex;
+            gap: 30px;
+            height: 100%;
+        }
+
+        .calendar-section {
+            flex: 1;
+        }
+
+        .custom-calendar-container {
+            display: flex;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0px 8px 24px rgba(0,0,0,0.06);
+            border: 1px solid #eee;
+            position: relative;
+            overflow: hidden;
+            height: 380px;
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .purple-curve {
+            background: linear-gradient(180deg, var(--purple-light) 0%, var(--purple-main) 100%);
+            width: 60px;
+            border-radius: 0 50% 50% 0 / 0 45% 45% 0;
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            z-index: 1;
+        }
+
+        .month-list {
+            position: relative;
+            z-index: 2;
+            width: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding: 10px 0;
+            color: rgba(255,255,255,0.6);
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+            list-style: none;
+            letter-spacing: 1px;
+            height: 100%;
+        }
+
+        .month-list li {
+            transition: 0.2s;
+            cursor: pointer;
+            padding: 5px 0;
+        }
+
+        .month-list li:hover {
+            color: #fff;
+        }
+
+        .month-list li.active {
+            color: #fff;
+            position: relative;
+        }
+
+        .month-list li.active::after {
+            content: '';
+            position: absolute;
+            right: -5px; 
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent transparent #333;
+        }
+
+        .calendar-right {
+            padding: 20px;
+            flex: 1;
+            margin-left: 60px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cal-header-new {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .cal-header-new h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .cal-arrows {
+            display: flex;
+            align-items: center;
+        }
+
+        /* --- UIVERSE.IO CUSTOM ARROW BUTTONS --- */
+        .button {
+            display: inline-block;
+            position: relative;
+            width: 40px;
+            height: 40px;
+            margin: 0 4px;
+            overflow: hidden;
+            outline: none;
+            background-color: transparent;
+            cursor: pointer;
+            border: 0;
+            vertical-align: middle;
+        }
+
+        .button:before,
+        .button:after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            inset: 4px; /* Scaled down for 40px button */
+        }
+
+        .button:before {
+            border: 2px solid #e2e2e2; /* Adapted for white background */
+            transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
+                transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
+        }
+
+        .button:after {
+            border: 2px solid var(--primary-blue);
+            transform: scale(1.3);
+            transition: opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+                transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            opacity: 0;
+        }
+
+        .button:hover:before,
+        .button:focus:before {
+            opacity: 0;
+            transform: scale(0.7);
+            transition: opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+                transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .button:hover:after,
+        .button:focus:after {
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
+                transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
+        }
+
+        .button-box {
+            display: flex;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .button-elem {
+            display: block;
+            width: 14px;
+            height: 14px;
+            margin: 13px 13px 0 13px; /* Centers the 14px SVG inside the 40px container */
+            transform: rotate(180deg); /* SVG points left natively */
+            fill: var(--primary-blue); /* Adapted for white background */
+        }
+
+        .button:hover .button-box,
+        .button:focus .button-box {
+            transition: 0.4s;
+            transform: translateX(-40px);
+        }
+
+        /* Right Arrow Modifier (Rotates whole container so the slide animation works symmetrically) */
+        .cal-right {
+            transform: rotate(180deg);
+        }
+
+
+        .cal-grid-new {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px 5px;
+            text-align: center;
+        }
+
+        .cal-grid-new .day-lbl {
+            font-size: 11px;
+            color: #ccc;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .cal-grid-new .date-num {
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 28px;
+            width: 28px;
+            margin: 0 auto;
+            border-radius: 50%;
+        }
+
+        .cal-grid-new .date-num:hover:not(.empty):not(.disabled) {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .cal-grid-new .date-num.active {
+            color: var(--purple-main);
+            font-weight: bold;
+            background: none;
+            font-size: 13px;
+        }
+
+        .cal-grid-new .date-num.empty, .cal-grid-new .date-num.disabled {
+            color: #ddd !important;
+            cursor: default !important;
+        }
+
+        .cal-grid-new .date-num.disabled:hover {
+            background: none !important;
+        }
+
+        /* --- TIMEZONE SELECTOR --- */
+        .timezone-selector {
+            margin-top: 30px;
+        }
+        .timezone-selector p {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-dark);
+        }
+        .tz-dropdown {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        .tz-dropdown svg {
+            width: 16px; height: 16px; margin-right: 8px; fill: var(--text-dark);
+        }
+        #current-time-display {
+            font-weight: 600;
+            margin-right: 8px;
+            color: var(--text-dark);
+            min-width: 60px;
+        }
+        .tz-dropdown select {
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            color: var(--primary-blue);
+            cursor: pointer;
+            outline: none;
+            font-weight: 500;
+            max-width: 200px;
+            text-overflow: ellipsis;
+        }
+        .tz-dropdown select:hover {
+            text-decoration: underline;
+        }
+
+        /* --- TIME SLOTS --- */
+        .time-section {
+            width: 220px;
+            display: none; 
+            flex-direction: column;
+            overflow-y: auto;
+            max-height: 450px;
+            padding-right: 10px;
+        }
+        
+        .time-section::-webkit-scrollbar {
+            width: 6px;
+        }
+        .time-section::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+
+        .selected-date-header {
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: var(--text-dark);
+        }
+
+        .time-slot-container {
+            display: flex;
+            margin-bottom: 10px;
+            gap: 5px;
+        }
+
+        .time-btn {
+            flex: 1;
+            padding: 14px;
+            background: white;
+            border: 1px solid #7dc1ff;
+            color: var(--primary-blue);
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .time-btn:hover {
+            border-color: var(--primary-blue);
+            border-width: 2px;
+            padding: 13px;
+        }
+
+        .time-slot-container.selected .time-btn {
+            background: #666666;
+            color: white;
+            border-color: #666666;
+            width: 50%;
+            flex: none;
+        }
+
+        .next-btn {
+            display: none;
+            width: 50%;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .time-slot-container.selected .next-btn {
+            display: block;
+        }
+
+        /* --- DETAILS FORM VIEW --- */
+        #details-view {
+            display: none; 
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: inherit;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 1px var(--primary-blue);
+        }
+
+        .form-group textarea {
+            height: 90px;
+            resize: vertical;
+        }
+
+        .add-guests-btn {
+            background: white;
+            border: 1px solid var(--primary-blue);
+            color: var(--primary-blue);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .terms-text {
+            font-size: 13px;
+            color: var(--text-gray);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .terms-text a {
+            color: var(--primary-blue);
+            text-decoration: none;
+        }
+
+        .schedule-btn {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            width: fit-content;
+        }
+        .schedule-btn:hover {
+            background: var(--primary-blue-hover);
+        }
+
+        /* --- CONFIRMATION VIEW --- */
+        #confirmation-view {
+            display: none; 
+            width: 100%;
+            flex-direction: column;
+            align-items: center; 
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .success-icon {
+            background: #006b54;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .success-icon svg {
+            fill: white;
+            width: 16px; height: 16px;
+        }
+
+        .confirmation-title {
+            font-size: 24px;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .confirmation-subtitle {
+            color: var(--text-gray);
+            font-size: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .open-invitation-btn {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 0 auto 40px auto;
+        }
+
+        .summary-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            width: 100%;
+            max-width: 450px;
+            text-align: left;
+            margin: 0 auto 20px auto;
+        }
+
+        .summary-card .event-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .schedule-another {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .confirmation-footer {
+            margin-top: 40px;
+            font-size: 13px;
+        }
+        .confirmation-footer a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 850px) {
+            body {
+                padding: 20px 10px;
+            }
+            .app-container {
+                flex-direction: column;
+                min-height: auto;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 20px;
+            }
+            .main-content {
+                width: 100%;
+                padding: 20px;
+            }
+            .calendar-wrapper {
+                flex-direction: column;
+            }
+            .custom-calendar-container {
+                max-width: 100%;
+                margin: 0 auto;
+            }
+            .time-section {
+                width: 100%;
+                margin-top: 20px;
+                padding-right: 0;
+            }
+            .time-slot-container {
+                width: 100%;
+            }
+            .back-btn {
+                top: 15px;
+                left: 15px;
+            }
+            .confirmation-footer {
+                position: static;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="app-container">
+    
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <!-- Back Button -->
+        <button class="back-btn" id="btn-back" onclick="showCalendarView()">&#8592;</button>
+
+        <div class="logo-container">
+            <!-- PUT YOUR LOGO IMAGE SOURCE HERE -->
+            <img src="my ecs logo.png" alt="Logo" id="brand-logo">
+        </div>
+        
+        <div class="provider-name">Ecstasy Solutions  powered by </div>
+        <div class="event-title">Schools ERP software demo</div>
+        
+        <div class="event-detail">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm.293-13.707L11 7v6.414l4.707 4.707 1.414-1.414L13 12.586V6.293z"></path></svg>
+            20 min
+        </div>
+        
+        <div class="event-detail">
+            <svg viewBox="0 0 24 24"><path d="M18 7c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v10c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-3.333L22 17V7l-4 3.333V7zM4 17V7h12l.002 10H4z"></path></svg>
+            Web conferencing details provided upon confirmation.
+        </div>
+
+        <!-- Dynamic details injected here during Step 2 -->
+        <div id="dynamic-sidebar-details" style="display: none; margin-top: 5px;">
+            <div class="event-detail">
+                <svg viewBox="0 0 24 24"><path d="M19 4h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2zm0 16H5V10h14v10z"></path></svg>
+                <span id="sidebar-datetime-text"></span>
+            </div>
+            <div class="event-detail">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm7.931 9h-2.764a14.67 14.67 0 0 0-1.792-6.243A8.013 8.013 0 0 1 19.931 11zM12.5 4.062a12.573 12.573 0 0 1 1.98 6.938h-4.96a12.573 12.573 0 0 1 1.98-6.938 8.073 8.073 0 0 1 1 0zm-7.431 6.938h2.764a14.67 14.67 0 0 0 1.792-6.243A8.013 8.013 0 0 1 4.069 11zM4.069 13h2.764a14.67 14.67 0 0 0 1.792 6.243A8.013 8.013 0 0 1 4.069 13zm7.431 6.938a12.573 12.573 0 0 1-1.98-6.938h4.96a12.573 12.573 0 0 1-1.98 6.938 8.073 8.073 0 0 1-1 0zm7.339-6.938a8.013 8.013 0 0 1-4.556 6.243 14.67 14.67 0 0 0 1.792-6.243h2.764z"></path></svg>
+                <span id="sidebar-tz-text">India Standard Time</span>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="#">Privacy Policy</a>
+        </div>
+    </div>
+
+    <!-- MAIN RIGHT CONTENT CONTAINER -->
+    <div class="main-content" id="main-content">
+        
+        <!-- STEP 1: CALENDAR VIEW -->
+        <div id="calendar-view">
+            <h2 class="section-title">Select a Date & Time</h2>
+            
+            <div class="calendar-wrapper">
+                <!-- Left: Calendar Grid -->
+                <div class="calendar-section">
+                    
+                    <div class="custom-calendar-container">
+                        <div class="purple-curve"></div>
+                        <ul class="month-list" id="dynamic-month-list">
+                            <li onclick="jumpToMonth(0)">JAN</li>
+                            <li onclick="jumpToMonth(1)">FEB</li>
+                            <li onclick="jumpToMonth(2)">MAR</li>
+                            <li onclick="jumpToMonth(3)">APR</li>
+                            <li onclick="jumpToMonth(4)">MAY</li>
+                            <li onclick="jumpToMonth(5)">JUN</li>
+                            <li onclick="jumpToMonth(6)">JUL</li>
+                            <li onclick="jumpToMonth(7)">AUG</li>
+                            <li onclick="jumpToMonth(8)">SEP</li>
+                            <li onclick="jumpToMonth(9)">OCT</li>
+                            <li onclick="jumpToMonth(10)">NOV</li>
+                            <li onclick="jumpToMonth(11)">DEC</li>
+                        </ul>
+                        
+                        <div class="calendar-right">
+                            <div class="cal-header-new">
+                                <h3 id="cal-month-year"></h3>
+                                
+                                <!-- CUSTOM UIVERSE ARROW BUTTONS -->
+                                <div class="cal-arrows">
+                                    <button class="button" onclick="prevMonth()">
+                                        <div class="button-box">
+                                            <span class="button-elem">
+                                                <svg viewBox="0 0 46 40" xmlns="http://www.w3.org/2000/svg"><path d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"></path></svg>
+                                            </span>
+                                            <span class="button-elem">
+                                                <svg viewBox="0 0 46 40"><path d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"></path></svg>
+                                            </span>
+                                        </div>
+                                    </button>
+                                    
+                                    <button class="button cal-right" onclick="nextMonth()">
+                                        <div class="button-box">
+                                            <span class="button-elem">
+                                                <svg viewBox="0 0 46 40" xmlns="http://www.w3.org/2000/svg"><path d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"></path></svg>
+                                            </span>
+                                            <span class="button-elem">
+                                                <svg viewBox="0 0 46 40"><path d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"></path></svg>
+                                            </span>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="cal-grid-new" id="cal-grid">
+                                <!-- Generated by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TIMEZONE SELECTOR & LIVE CLOCK -->
+                    <div class="timezone-selector">
+                        <p>Time zone</p>
+                        <div class="tz-dropdown">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm7.931 9h-2.764a14.67 14.67 0 0 0-1.792-6.243A8.013 8.013 0 0 1 19.931 11zM12.5 4.062a12.573 12.573 0 0 1 1.98 6.938h-4.96a12.573 12.573 0 0 1 1.98-6.938 8.073 8.073 0 0 1 1 0zm-7.431 6.938h2.764a14.67 14.67 0 0 0 1.792-6.243A8.013 8.013 0 0 1 4.069 11zM4.069 13h2.764a14.67 14.67 0 0 0 1.792 6.243A8.013 8.013 0 0 1 4.069 13zm7.431 6.938a12.573 12.573 0 0 1-1.98-6.938h4.96a12.573 12.573 0 0 1-1.98 6.938 8.073 8.073 0 0 1-1 0zm7.339-6.938a8.013 8.013 0 0 1-4.556 6.243 14.67 14.67 0 0 0 1.792-6.243h2.764z"></path></svg>
+                            <span id="current-time-display">--:--</span>
+                            <select id="tz-select" onchange="changeTimezone()">
+                                <!-- Populated dynamically by JS -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Time Slots -->
+                <div class="time-section" id="time-section">
+                    <div class="selected-date-header" id="display-selected-date"></div>
+                    
+                    <div id="time-slots-container">
+                        <!-- Generated via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: DETAILS FORM VIEW -->
+        <div id="details-view">
+            <h2 class="section-title">Enter Details</h2>
+            
+            <div class="form-group">
+                <label>Name *</label>
+                <input type="text" id="guest-name" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Email *</label>
+                <input type="email" id="guest-email" placeholder="name@example.com" required>
+            </div>
+
+            <button class="add-guests-btn">Add Guests</button>
+
+            <div class="form-group">
+                <label>Please share anything that will help prepare for our meeting.</label>
+                <textarea id="guest-notes"></textarea>
+            </div>
+
+            <div class="terms-text">
+                By proceeding, you confirm that you have read and agree to <br>
+                <a href="#">Calendly's Invitee Terms</a> and <a href="#">Privacy Notice.</a>
+            </div>
+
+            <button class="schedule-btn" onclick="scheduleEvent()">Schedule Event</button>
+        </div>
+
+    </div>
+
+    <!-- STEP 3: CONFIRMATION VIEW -->
+    <div id="confirmation-view">
+        <div class="confirmation-title">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"></path></svg>
+            </div>
+            You are scheduled
+        </div>
+        
+        <div class="confirmation-subtitle">A calendar invitation has been sent to your email address.</div>
+        
+        <button class="open-invitation-btn">
+            Open Invitation
+            <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"></path></svg>
+        </button>
+
+        <div class="summary-card">
+            <div class="event-title">Ecstasy Schools Demo</div>
+            
+         <div class="event-detail">
+    <svg viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
+    </svg>
+
+    <span id="confirm-name-text"></span>
+
+</div>
+    <div class="event-detail">
+                <svg viewBox="0 0 24 24"><path d="M19 4h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2zm0 16H5V10h14v10z"></path></svg>
+                <span id="confirm-datetime-text"></span>
+            </div>
+            <div class="event-detail">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm7.931 9h-2.764a14.67 14.67 0 0 0-1.792-6.243A8.013 8.013 0 0 1 19.931 11zM12.5 4.062a12.573 12.573 0 0 1 1.98 6.938h-4.96a12.573 12.573 0 0 1 1.98-6.938 8.073 8.073 0 0 1 1 0z"></path></svg>
+                <span id="confirm-tz-text">India Standard Time</span>
+            </div>
+            <div class="event-detail" style="margin-bottom:0;">
+                <svg viewBox="0 0 24 24"><path d="M18 7c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v10c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-3.333L22 17V7l-4 3.333V7zM4 17V7h12l.002 10H4z"></path></svg>
+                Web conferencing details to follow.
+            </div>
+        </div>
+        
+        <a class="schedule-another" onclick="resetApp()">Schedule another event</a>
+
+    </div>
+
+</div>
+
+<script>
+    // --- GLOBAL TIMEZONES LIST ---
+    const allTimezones = [
+        { id: 'Pacific/Midway', name: 'Midway Island Time' },
+        { id: 'Pacific/Honolulu', name: 'Hawaii Standard Time' },
+        { id: 'America/Anchorage', name: 'Alaska Standard Time' },
+        { id: 'America/Los_Angeles', name: 'Pacific Time (US & Canada)' },
+        { id: 'America/Denver', name: 'Mountain Time (US & Canada)' },
+        { id: 'America/Chicago', name: 'Central Time (US & Canada)' },
+        { id: 'America/New_York', name: 'Eastern Time (US & Canada)' },
+        { id: 'America/Halifax', name: 'Atlantic Time (Canada)' },
+        { id: 'America/Sao_Paulo', name: 'Brasilia Time' },
+        { id: 'Europe/London', name: 'Greenwich Mean / UK Time' },
+        { id: 'Europe/Paris', name: 'Central European Time' },
+        { id: 'Africa/Cairo', name: 'Eastern European Time' },
+        { id: 'Europe/Moscow', name: 'Moscow Standard Time' },
+        { id: 'Asia/Dubai', name: 'Gulf Standard Time' },
+        { id: 'Asia/Kolkata', name: 'India Standard Time' },
+        { id: 'Asia/Dhaka', name: 'Bangladesh Standard Time' },
+        { id: 'Asia/Bangkok', name: 'Indochina Time' },
+        { id: 'Asia/Singapore', name: 'Singapore Standard Time' },
+        { id: 'Asia/Tokyo', name: 'Japan Standard Time' },
+        { id: 'Australia/Sydney', name: 'Australian Eastern Time' },
+        { id: 'Pacific/Auckland', name: 'New Zealand Standard Time' }
+    ];
+
+    // --- STATE VARIABLES ---
+    let currentDate = new Date();
+    
+    // Limits: Today to 1 Year from Today
+    const today = new Date(currentDate);
+    today.setHours(0,0,0,0);
+    const maxDate = new Date(today);
+    maxDate.setFullYear(maxDate.getFullYear() + 1);
+
+    let viewingMonth = today.getMonth();
+    let viewingYear = today.getFullYear();
+
+    let chosenDateString = ""; // e.g. "June 12, 2024"
+    let chosenDisplayDate = ""; // e.g. "Monday, June 12"
+    let chosenTime = "";
+    
+    // Automatically detect user's local timezone
+    let selectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    // PULL BOOKED SLOTS FROM BROWSER STORAGE SO THEY SURVIVE REFRESH
+    // We store the absolute UTC timestamp of the booked slot to handle timezone shifts flawlessly
+    let bookedSlots = JSON.parse(localStorage.getItem('ecstasyBookedSlotsUTC')) || [];
+
+    const monthsFull = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const daysWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+    // --- TIMEZONE & CLOCK LOGIC ---
+    function initTimezones() {
+        const select = document.getElementById('tz-select');
+        let html = '';
+        
+        // Ensure user's detected timezone is in the list. If not, add it dynamically.
+        let tzExists = allTimezones.find(t => t.id === selectedTimezone);
+        if(!tzExists) {
+            allTimezones.push({ id: selectedTimezone, name: selectedTimezone.replace(/_/g, ' ') });
+        }
+
+        // Sort alphabetically and populate
+        allTimezones.sort((a,b) => a.name.localeCompare(b.name)).forEach(tz => {
+            const selected = tz.id === selectedTimezone ? 'selected' : '';
+            html += `<option value="${tz.id}" ${selected}>${tz.name}</option>`;
+        });
+        
+        select.innerHTML = html;
+        
+        // Update Sidebars labels initially
+        const tzName = select.options[select.selectedIndex].text;
+        document.getElementById('sidebar-tz-text').innerText = tzName;
+        document.getElementById('confirm-tz-text').innerText = tzName;
+
+        updateLiveTime();
+        
+        // Run clock every second
+        setInterval(updateLiveTime, 1000);
+    }
+
+    function changeTimezone() {
+        selectedTimezone = document.getElementById('tz-select').value;
+        const tzName = document.getElementById('tz-select').options[document.getElementById('tz-select').selectedIndex].text;
+        
+        // Update Sidebars
+        document.getElementById('sidebar-tz-text').innerText = tzName;
+        document.getElementById('confirm-tz-text').innerText = tzName;
+        
+        updateLiveTime();
+        
+        // Re-render time slots based on the new timezone calculation
+        if(chosenDateString !== "") {
+            renderTimeSlots();
+        }
+    }
+
+
+
+
+    function updateLiveTime() {
+        const now = new Date();
+        const timeString = new Intl.DateTimeFormat('en-US', {
+            timeZone: selectedTimezone,
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        }).format(now);
+        
+        document.getElementById('current-time-display').innerText = timeString.toLowerCase();
+    }
+
+    // --- CALENDAR LOGIC ---
+    function renderCalendar(month, year) {
+        document.getElementById('cal-month-year').innerText = `${monthsFull[month]} ${year}`;
+        
+        // Update Purple sidebar list active state
+        const listItems = document.querySelectorAll('#dynamic-month-list li');
+        listItems.forEach((li, index) => {
+            if(index === month) {
+                li.classList.add('active');
+            } else {
+                li.classList.remove('active');
+            }
+        });
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        const grid = document.getElementById('cal-grid');
+        grid.innerHTML = '<div class="day-lbl">Sun</div><div class="day-lbl">Mon</div><div class="day-lbl">Tue</div><div class="day-lbl">Wed</div><div class="day-lbl">Thu</div><div class="day-lbl">Fri</div><div class="day-lbl">Sat</div>';
+
+        // Empty cells before start
+        for(let i = 0; i < firstDay; i++) {
+            grid.innerHTML += `<div class="date-num empty"></div>`;
+        }
+
+        // Days of month
+        for(let i = 1; i <= daysInMonth; i++) {
+            const iterDate = new Date(year, month, i);
+            iterDate.setHours(0,0,0,0);
+            
+            // Format string
+            const iterDateStr = `${monthsFull[month]} ${i}, ${year}`;
+            const displayDateStr = `${daysWeek[iterDate.getDay()]}, ${monthsFull[month]} ${i}`;
+
+            let classStr = "date-num";
+            
+            // Disable if past or beyond 1 year
+            if(iterDate < today || iterDate > maxDate) {
+                classStr += " disabled";
+                grid.innerHTML += `<div class="${classStr}">${i}</div>`;
+            } else {
+                // Check if it's the currently selected date
+                if(chosenDateString === iterDateStr) {
+                    classStr += " active";
+                }
+                grid.innerHTML += `<div class="${classStr}" onclick="selectDate(this, '${iterDateStr}', '${displayDateStr}')">${i}</div>`;
+            }
+        }
+    }
+
+    function prevMonth() {
+        if(viewingYear === today.getFullYear() && viewingMonth === today.getMonth()) return; // Can't go before today
+        viewingMonth--;
+        if(viewingMonth < 0) {
+            viewingMonth = 11;
+            viewingYear--;
+        }
+        renderCalendar(viewingMonth, viewingYear);
+    }
+
+    function nextMonth() {
+        const testDate = new Date(viewingYear, viewingMonth + 1, 1);
+        if(testDate > maxDate) return; // Can't go beyond 1 year
+
+        viewingMonth++;
+        if(viewingMonth > 11) {
+            viewingMonth = 0;
+            viewingYear++;
+        }
+        renderCalendar(viewingMonth, viewingYear);
+    }
+
+    // Jump to month when clicking purple list
+    function jumpToMonth(mIndex) {
+        let targetYear = today.getFullYear();
+        if (mIndex < today.getMonth()) {
+            targetYear++;
+        }
+
+        if (targetYear > maxDate.getFullYear() || (targetYear === maxDate.getFullYear() && mIndex > maxDate.getMonth())) {
+            return; 
+        }
+
+        viewingMonth = mIndex;
+        viewingYear = targetYear;
+        renderCalendar(viewingMonth, viewingYear);
+    }
+
+    function selectDate(element, dateStr, displayStr) {
+        if(element.classList.contains('empty') || element.classList.contains('disabled')) return;
+        
+        document.querySelectorAll('.date-num').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        
+        chosenDateString = dateStr;
+        chosenDisplayDate = displayStr;
+        
+        document.getElementById('display-selected-date').innerText = chosenDisplayDate;
+        
+        document.getElementById('time-section').style.display = 'flex';
+        renderTimeSlots();
+    }
+
+    // --- DYNAMIC TIME SLOT GENERATOR (IST BASE) ---
+    function generateAvailableSlotsUTC() {
+        // Host works 11:00 AM to 8:00 PM in Asia/Kolkata (IST = UTC + 5:30)
+        // 11:00 IST = 05:30 UTC. 20:00 IST = 14:30 UTC.
+        
+        const slots = [];
+        
+        // Generate surrounding days to account for global timezone shifts 
+        // crossing the midnight boundary.
+        const baseDate = new Date(chosenDateString);
+        const y = baseDate.getFullYear();
+        const m = baseDate.getMonth();
+        const d = baseDate.getDate();
+
+        for(let offset = -1; offset <= 1; offset++) {
+            const tempDate = new Date(y, m, d + offset);
+            
+            // For each day, create UTC equivalent of 11am to 8pm IST (05:30 to 14:30 UTC)
+            for(let hour = 5; hour <= 14; hour++) {
+                for(let min of [0, 30]) {
+                    if(hour === 5 && min === 0) continue; // Start exactly at 5:30 UTC
+                    
+                    const slotUTC = new Date(Date.UTC(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate(), hour, min, 0));
+                    
+                    if(hour === 14 && min === 30) {
+                        slots.push(slotUTC); // Final slot 20:00 IST
+                    } else if (hour < 14 || (hour === 14 && min === 0)) {
+                        slots.push(slotUTC);
+                    }
+                }
+            }
+        }
+        return slots;
+    }
+    function formatDateForAPI(dateStr) {
+
+    const parts =
+        dateStr.split(" ");
+
+    const monthNames = {
+        January:"01",
+        February:"02",
+        March:"03",
+        April:"04",
+        May:"05",
+        June:"06",
+        July:"07",
+        August:"08",
+        September:"09",
+        October:"10",
+        November:"11",
+        December:"12"
+    };
+
+    // FIX — PAD DAY WITH ZERO
+    let day =
+        parts[1].replace(",", "");
+
+    day =
+        day.padStart(2, "0");
+
+    const month =
+        monthNames[parts[0]];
+
+    const year =
+        parts[2];
+
+    return `${year}-${month}-${day}`;
+}
+
+    async function renderTimeSlots() {
+
+    const timeContainer =
+        document.getElementById(
+            "time-slots-container"
+        );
+
+    timeContainer.innerHTML =
+        "Loading slots...";
+
+    try {
+
+        // FORMAT DATE
+        const selectedDate =
+            formatDateForAPI(
+                chosenDateString
+            );
+
+        console.log(
+            "Fetching slots for:",
+            selectedDate
+        );
+
+        // FETCH SLOTS (same style as book-slot)
+        const response =
+            await fetch(
+                `http://localhost:5000/api/slots/${selectedDate}`
+            );
+
+        // IMPORTANT ERROR CHECK
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to fetch slots"
+            );
+
+        }
+
+        // GET DATA
+        const slots =
+            await response.json();
+
+        console.log(
+            "Slots received:",
+            slots
+        );
+
+        // CLEAR OLD
+        timeContainer.innerHTML = "";
+
+        // NO SLOTS CASE
+        if (slots.length === 0) {
+
+            timeContainer.innerHTML =
+                "<p>No slots available</p>";
+
+            return;
+
+        }
+
+        // CREATE SLOT BUTTONS
+        slots.forEach(slot => {
+
+            const div =
+                document.createElement("div");
+
+            div.className =
+                "time-slot-container";
+
+            div.innerHTML = `
+                <button
+                    class="time-btn"
+                    onclick="selectTime(
+                        this,
+                        '${slot.time}',
+                        '${slot._id}'
+                    )">
+
+                    ${slot.time}
+
+                </button>
+
+                <button
+                    class="next-btn"
+                    onclick="goToDetails()">
+
+                    Next
+
+                </button>
+            `;
+
+            timeContainer.appendChild(div);
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Error loading slots:",
+            error
+        );
+
+        timeContainer.innerHTML =
+            "Error loading slots";
+
+    }
+
+}
+ let chosenUTCVal = "";
+    function selectTime(btnElement, time, utcVal) {
+        document.querySelectorAll('.time-slot-container').forEach(el => el.classList.remove('selected'));
+        btnElement.parentElement.classList.add('selected');
+        chosenTime = time;
+        chosenUTCVal = utcVal; // Save the absolute global time for precise booking
+    }
+
+    function goToDetails() {
+        document.getElementById('calendar-view').style.display = 'none';
+        document.getElementById('details-view').style.display = 'flex';
+        document.getElementById('btn-back').style.display = 'flex';
+        
+        const endTime = calculateEndTime(chosenTime);
+        const datetimeStr = `${chosenTime} - ${endTime}, ${chosenDisplayDate}, ${chosenDateString.split(', ')[1]}`;
+        
+        document.getElementById('sidebar-datetime-text').innerText = datetimeStr;
+        document.getElementById('dynamic-sidebar-details').style.display = 'block';
+    }
+
+    function showCalendarView() {
+        document.getElementById('details-view').style.display = 'none';
+        document.getElementById('calendar-view').style.display = 'block';
+        document.getElementById('btn-back').style.display = 'none';
+        document.getElementById('dynamic-sidebar-details').style.display = 'none';
+        renderTimeSlots();
+    }
+
+    async function scheduleEvent() {
+
+    // GET BUTTON
+    const btn =
+        document.querySelector(".schedule-btn");
+
+    // PREVENT DOUBLE CLICK
+    btn.disabled = true;
+    btn.innerText = "Booking...";
+
+    // GET USER VALUES
+    const name =
+        document.getElementById(
+            "guest-name"
+        ).value;
+
+    const email =
+        document.getElementById(
+            "guest-email"
+        ).value;
+
+    if (!name || !email) {
+
+        alert("Enter name and email");
+
+        btn.disabled = false;
+        btn.innerText = "Schedule Event";
+
+        return;
+
+    }
+
+    try {
+
+        // FORMAT DATE
+        const selectedDate =
+            formatDateForAPI(
+                chosenDateString
+            );
+
+        console.log(
+            "Booking slot:",
+            selectedDate,
+            chosenTime
+        );
+
+        const response =
+            await fetch(
+                "http://localhost:5000/api/book-slot",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                        "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        name: name,
+                        email: email,
+                        date: selectedDate,
+                        time: chosenTime
+
+                    })
+
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+
+            alert(data.message);
+
+            // ENABLE BUTTON AGAIN
+            btn.disabled = false;
+            btn.innerText = "Schedule Event";
+
+            return;
+
+        }
+
+        // SET NAME
+        document.getElementById(
+            "confirm-name-text"
+        ).innerText = name;
+
+        // SET DATE + TIME
+        const endTime =
+            calculateEndTime(chosenTime);
+
+        const datetimeStr =
+            `${chosenTime} - ${endTime}, ${chosenDisplayDate}`;
+
+        document.getElementById(
+            "confirm-datetime-text"
+        ).innerText =
+            datetimeStr;
+
+        alert(
+            "Booking successful! Check your email."
+        );
+
+        // SHOW CONFIRMATION
+        document.getElementById(
+            "calendar-view"
+        ).style.display = "none";
+
+        document.getElementById(
+            "details-view"
+        ).style.display = "none";
+
+        document.getElementById(
+            "confirmation-view"
+        ).style.display = "flex";
+
+    }
+
+    catch (error) {
+
+        console.log(error);
+
+        alert("Booking failed");
+
+        btn.disabled = false;
+        btn.innerText = "Schedule Event";
+
+    }
+
+}
+
+    function resetApp() {
+        document.getElementById('confirmation-view').style.display = 'none';
+        document.getElementById('app-container').style.display = 'flex';
+        
+        // Reset Mobile Layout Rules via empty inline style
+        document.getElementById('sidebar').style.display = '';
+        document.getElementById('main-content').style.display = '';
+        
+        document.getElementById('guest-name').value = '';
+        document.getElementById('guest-email').value = '';
+        document.getElementById('guest-notes').value = '';
+        
+        chosenTime = "";
+        chosenUTCVal = "";
+        showCalendarView();
+    }
+
+    // --- Time Math (20 mins meeting) ---
+    function calculateEndTime(startTime) {
+
+    // startTime example: "11:20"
+
+    let parts =
+        startTime.split(":");
+
+    let hours =
+        parseInt(parts[0]);
+
+    let minutes =
+        parseInt(parts[1]);
+
+    // ADD 20 MINUTES
+    minutes += 20;
+
+    if (minutes >= 60) {
+
+        minutes -= 60;
+        hours += 1;
+
+    }
+
+    // FORMAT HOURS
+    let formattedHours =
+        hours.toString()
+        .padStart(2, "0");
+
+    // FORMAT MINUTES
+    let formattedMinutes =
+        minutes.toString()
+        .padStart(2, "0");
+
+    return `${formattedHours}:${formattedMinutes}`;
+
+}
+
+    // Initialization
+    window.onload = () => {
+        initTimezones();
+        renderCalendar(viewingMonth, viewingYear);
+        
+        // Auto-select today to show timeslots immediately
+        const todayStr = `${monthsFull[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
+        const todayDispStr = `${daysWeek[today.getDay()]}, ${monthsFull[today.getMonth()]} ${today.getDate()}`;
+        
+        const dateElements = document.querySelectorAll('.date-num:not(.empty):not(.disabled)');
+        for(let el of dateElements) {
+            if(el.innerText == today.getDate()) {
+                selectDate(el, todayStr, todayDispStr);
+                break;
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
