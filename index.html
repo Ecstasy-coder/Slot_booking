@@ -1236,7 +1236,7 @@
         // FETCH SLOTS (same style as book-slot)
         const response =
             await fetch(
-                `http://localhost:5000/api/slots/${selectedDate}`
+                `https://slot-booking-eyns.onrender.com/slots/${selectedDate}`
             );
 
         // IMPORTANT ERROR CHECK
@@ -1396,7 +1396,7 @@
 
         const response =
             await fetch(
-                "http://localhost:5000/api/book-slot",
+                "https://slot-booking-eyns.onrender.com/api/book-slot",
                 {
 
                     method: "POST",
