@@ -3,6 +3,7 @@ const nodemailer = require("nodemailer");
 const sendEmail = async (
   to,
   name,
+  meetingLink,
   date,
   time
 ) => {
@@ -21,13 +22,9 @@ const sendEmail = async (
 
     });
 
-    // Google Meet Link
-    const meetLink =
-    "https://meet.google.com/fsg-tqfk-ejz";
-
     const mailOptions = {
 
-      from: process.env.EMAIL,
+      from: process.env.EMAIL_USER,
 
       to: to,
 
@@ -50,8 +47,8 @@ const sendEmail = async (
         </p>
 
         <p>
-          Your <b>ECSTASY solutions </b>
-          is confirmed!
+          Your <b>ECSTASY Solutions</b>
+          meeting is confirmed!
         </p>
 
         <hr>
@@ -61,7 +58,7 @@ const sendEmail = async (
           ⏰ <b>Time:</b> ${time} IST<br>
           🔗 <b>Join Meeting:</b><br>
 
-          <a href="${meetLink}"
+          <a href="${meetingLink}"
              style="
                background:#006bff;
                color:white;
@@ -79,7 +76,7 @@ const sendEmail = async (
 
         <p>
           See you soon!<br>
-          <b>Rakesh </b><br>
+          <b>Rakesh</b><br>
           Ecstasy Solutions
         </p>
 
@@ -88,12 +85,12 @@ const sendEmail = async (
 
     };
 
-    await transporter.sendMail(
-      mailOptions
-    );
+    const info =
+    await transporter.sendMail(mailOptions);
 
     console.log(
-      "Email Sent Successfully"
+      "Email Sent:",
+      info.response
     );
 
   }
