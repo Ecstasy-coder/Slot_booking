@@ -103,14 +103,12 @@ nodemailer.createTransport({
 
   }
 
-  catch (error) {
+catch(error){
 
-    console.log(
-      "Email Error:",
-      error
-    );
+   console.log("Email Error:", error);
 
-  }
+   throw error;
+}
 
 };
 
