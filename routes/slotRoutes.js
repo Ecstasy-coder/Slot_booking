@@ -66,6 +66,10 @@ router.post("/book-slot", async (req, res) => {
     const meetingLink =
       "https://meet.google.com/fsg-tqfk-ejz";
 
+    console.log("EMAIL_USER:", process.env.EMAIL_USER);
+    console.log("EMAIL_PASS:", process.env.EMAIL_PASS);
+
+
     // Send email
     await sendEmail(
       email,
